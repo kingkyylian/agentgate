@@ -39,7 +39,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "commander": "^14.0.0",
+    "commander": "^15.0.0",
     "execa": "^9.6.0",
     "fast-glob": "^3.3.3",
     "picomatch": "^4.0.3",
