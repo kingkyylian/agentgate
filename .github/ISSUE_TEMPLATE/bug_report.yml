@@ -1,0 +1,26 @@
+name: Bug report
+description: Report AgentGate behavior that is wrong or unsafe.
+title: "bug: "
+labels: ["bug", "triage"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What did AgentGate do, and what should it have done?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Reproduction
+      description: Include the policy, command, ToolEvent, or MCP call needed to reproduce.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Paste relevant output, audit summary, or JSON-RPC error. Redact secrets.
+    validations:
+      required: false

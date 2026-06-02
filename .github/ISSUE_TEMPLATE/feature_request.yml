@@ -1,0 +1,26 @@
+name: Feature request
+description: Suggest a new AgentGate guard, integration, or workflow.
+title: "feat: "
+labels: ["feature", "triage"]
+body:
+  - type: textarea
+    id: use_case
+    attributes:
+      label: Use case
+      description: What agent/tool workflow would this improve?
+    validations:
+      required: true
+  - type: textarea
+    id: policy
+    attributes:
+      label: Policy impact
+      description: Should this allow, deny, ask, redact, audit, or explain behavior?
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives
+      description: Existing workaround or related tools.
+    validations:
+      required: false

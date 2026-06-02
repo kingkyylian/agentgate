@@ -1,0 +1,12 @@
+- name: bug
+  color: d73a4a
+  description: Something is broken.
+- name: feature
+  color: 0e8a16
+  description: New behavior or integration.
+- name: security
+  color: b60205
+  description: Security-sensitive issue or hardening.
+- name: triage
+  color: cfd3d7
+  description: Needs maintainer review.

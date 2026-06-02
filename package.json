@@ -1,0 +1,71 @@
+{
+  "name": "@kingkyylian/agentgate",
+  "version": "0.1.0",
+  "description": "A local firewall for AI coding agents and MCP tools.",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kingkyylian/agentgate.git"
+  },
+  "homepage": "https://github.com/kingkyylian/agentgate#readme",
+  "bugs": {
+    "url": "https://github.com/kingkyylian/agentgate/issues"
+  },
+  "packageManager": "pnpm@10.33.0",
+  "bin": {
+    "agentgate": "./dist/cli/index.js"
+  },
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md",
+    "SECURITY.md",
+    "CONTRIBUTING.md",
+    "docs",
+    "examples"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "check": "pnpm typecheck && pnpm test",
+    "demo": "node dist/cli/index.js demo",
+    "prepack": "pnpm build",
+    "smoke:package": "npm pack --dry-run",
+    "smoke:install": "node scripts/install-smoke.mjs",
+    "test": "pnpm build && vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "commander": "^14.0.0",
+    "execa": "^9.6.0",
+    "fast-glob": "^3.3.3",
+    "picomatch": "^4.0.3",
+    "yaml": "^2.8.1",
+    "zod": "^4.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "tsup": "^8.5.0",
+    "typescript": "^5.9.0",
+    "vitest": "^3.2.0"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "keywords": [
+    "ai-agents",
+    "mcp",
+    "coding-agents",
+    "agent-security",
+    "agent-tools",
+    "cli",
+    "llmops"
+  ],
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  }
+}

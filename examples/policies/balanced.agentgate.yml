@@ -1,0 +1,33 @@
+version: 1
+mode: enforce
+workspace:
+  root: "."
+  readable:
+    - "**"
+  writable:
+    - "src/**"
+    - "tests/**"
+    - "docs/**"
+  neverRead:
+    - ".env"
+    - ".env.*"
+    - ".ssh/**"
+    - "**/*.pem"
+    - "**/id_ed25519"
+audit:
+  path: ".agentgate/audit.jsonl"
+  redactSecrets: true
+approval:
+  mode: terminal
+rules:
+  - id: deny-private-key-reads
+    effect: deny
+    tools: ["fs.read", "mcp.tool", "read_file"]
+    paths: [".ssh/**", "**/*.pem", "**/id_ed25519"]
+    reason: "Private key reads are blocked"
+  - id: ask-dangerous-shell
+    effect: ask
+    tools: ["shell.exec"]
+    commandRisk:
+      min: high
+    reason: "High-risk shell commands require approval"

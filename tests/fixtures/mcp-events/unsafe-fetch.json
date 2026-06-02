@@ -1,0 +1,12 @@
+{
+  "id": "evt_fixture_unsafe_fetch",
+  "timestamp": "2026-06-02T12:00:00.000Z",
+  "kind": "mcp.tool",
+  "toolName": "fetch",
+  "serverName": "fetch",
+  "cwd": "/repo",
+  "input": {
+    "url": "http://169.254.169.254/latest/meta-data"
+  },
+  "metadata": {}
+}
