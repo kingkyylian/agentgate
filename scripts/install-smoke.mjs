@@ -7,16 +7,14 @@ const root = path.resolve(import.meta.dirname, "..");
 const packDir = await mkdtemp(path.join(tmpdir(), "agentgate-pack-"));
 const installDir = await mkdtemp(path.join(tmpdir(), "agentgate-install-"));
 const env = {
-  PATH: process.env.PATH,
-  HOME: process.env.HOME,
-  TMPDIR: process.env.TMPDIR,
+  ...process.env,
   npm_config_loglevel: "error",
   npm_config_audit: "false",
   npm_config_fund: "false"
 };
 const commandOptions = {
   env,
-  timeout: 30_000
+  timeout: 120_000
 };
 
 try {
