@@ -6,12 +6,14 @@ import { execa } from "execa";
 const root = path.resolve(import.meta.dirname, "..");
 const packDir = await mkdtemp(path.join(tmpdir(), "agentgate-pack-"));
 const installDir = await mkdtemp(path.join(tmpdir(), "agentgate-install-"));
-const env = {
-  ...process.env,
+const env = Object.fromEntries(
+  Object.entries(process.env).filter(([key]) => !key.startsWith("npm_") && key !== "INIT_CWD")
+);
+Object.assign(env, {
   npm_config_loglevel: "error",
   npm_config_audit: "false",
   npm_config_fund: "false"
-};
+});
 const commandOptions = {
   env,
   timeout: 120_000
