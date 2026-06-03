@@ -1,4 +1,4 @@
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { execa } from "execa";
@@ -6,13 +6,18 @@ import { execa } from "execa";
 const root = path.resolve(import.meta.dirname, "..");
 const packDir = await mkdtemp(path.join(tmpdir(), "agentgate-pack-"));
 const installDir = await mkdtemp(path.join(tmpdir(), "agentgate-install-"));
+const userConfig = path.join(installDir, "user.npmrc");
+const globalConfig = path.join(installDir, "global.npmrc");
 const env = Object.fromEntries(
-  Object.entries(process.env).filter(([key]) => !key.startsWith("npm_") && key !== "INIT_CWD")
+  Object.entries(process.env).filter(([key]) => !key.toLowerCase().startsWith("npm_") && key !== "INIT_CWD")
 );
 Object.assign(env, {
   npm_config_loglevel: "error",
   npm_config_audit: "false",
-  npm_config_fund: "false"
+  npm_config_fund: "false",
+  npm_config_registry: "https://registry.npmjs.org/",
+  npm_config_userconfig: userConfig,
+  npm_config_globalconfig: globalConfig
 });
 const commandOptions = {
   env,
@@ -20,6 +25,7 @@ const commandOptions = {
 };
 
 try {
+  await Promise.all([writeFile(userConfig, ""), writeFile(globalConfig, "")]);
   await execa("pnpm", ["build"], { cwd: root, ...commandOptions });
   const pack = await execa("npm", ["pack", "--ignore-scripts", "--pack-destination", packDir], {
     cwd: root,
