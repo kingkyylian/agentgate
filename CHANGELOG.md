@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.1
+
+- Published the initial public npm release after the 0.1.0 version was reserved during publish verification.
+
 ## 0.1.0
 
 - Added local policy engine with allow, deny, ask, and redact decisions.
