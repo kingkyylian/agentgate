@@ -12,6 +12,7 @@ jobs:
   npm:
     if: ${{ !github.event.release.prerelease && !github.event.release.draft && startsWith(github.event.release.tag_name, 'v') }}
     runs-on: ubuntu-latest
+    environment: npm-publish
     env:
       RELEASE_TAG: ${{ github.event.release.tag_name }}
     steps:
