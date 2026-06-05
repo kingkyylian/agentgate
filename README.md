@@ -1,11 +1,14 @@
 # AgentGate
 
+[![CI](https://github.com/kingkyylian/agentgate/actions/workflows/ci.yml/badge.svg)](https://github.com/kingkyylian/agentgate/actions/workflows/ci.yml)
+[![npm version](https://img.shields.io/npm/v/@kingkyylian/agentgate.svg)](https://www.npmjs.com/package/@kingkyylian/agentgate)
+
 AgentGate is a local firewall for AI coding agents.
 
 Put a deterministic policy layer between agents and tools. AgentGate blocks secret reads, risky shell commands, unsafe filesystem writes, SSRF-prone fetches, and unapproved MCP calls before they execute.
 
 ```bash
-npx @kingkyylian/agentgate demo
+npx @kingkyylian/agentgate@latest demo
 ```
 
 Example output:
@@ -30,8 +33,8 @@ pnpm add -D @kingkyylian/agentgate
 or run directly:
 
 ```bash
-npx @kingkyylian/agentgate init
-npx @kingkyylian/agentgate check
+npx @kingkyylian/agentgate@latest init
+npx @kingkyylian/agentgate@latest check
 ```
 
 ## Usage
@@ -87,7 +90,7 @@ rules:
       min: high
 ```
 
-See [docs/policy.md](docs/policy.md) and [docs/threat-model.md](docs/threat-model.md).
+See [docs/policy.md](docs/policy.md), [docs/threat-model.md](docs/threat-model.md), and [docs/roadmap.md](docs/roadmap.md).
 
 ## Verification
 
