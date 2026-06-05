@@ -48,7 +48,7 @@ Configure the npm package trusted publisher before relying on the workflow:
 - Provider: GitHub Actions
 - Organization or user: `kingkyylian`
 - Repository: `agentgate`
-- Workflow filename: `publish.yml`
+- Workflow filename: `publish.yaml`
 - Environment: `npm-publish`
 
 The workflow runs only when a non-prerelease GitHub Release is published from a `v*` tag. It verifies that the tag version matches `package.json`, checks that the npm version does not already exist, runs the release gates, and publishes with provenance.
