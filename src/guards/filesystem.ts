@@ -10,6 +10,7 @@ export const defaultNeverReadPatterns = [
   ".env.*",
   ".ssh/**",
   ".gnupg/**",
+  ".aws/**",
   "**/*.pem",
   "**/*.key",
   "**/*_rsa",

@@ -8,6 +8,16 @@ AgentGate policies live in `agentgate.yml`.
 - `ask`: non-critical deny decisions become ask decisions.
 - `monitor`: events are logged, but blocking decisions become allow decisions with warnings.
 
+## Built-In Presets
+
+Use `balanced` for normal coding-agent sessions. It allows low-risk repo inspection, test/build commands, docs/example edits, and package metadata edits, while blocking credential reads and private-network fetches. High-risk shell commands require approval.
+
+Use `strict` when the agent should make narrower edits. It keeps writes to `src/**`, `tests/**`, and `docs/**`; package installs and other medium-risk shell commands require approval.
+
+Use `monitor` when introducing AgentGate into an existing workflow. It records what would have been denied or asked without blocking execution, but keeps the same credential-path and network policy definitions visible in the generated config.
+
+All presets protect `.env*`, `.ssh/**`, `.gnupg/**`, `.aws/**`, private keys, secret directories, `.npmrc`, and `.pypirc` from filesystem and MCP read paths.
+
 ## Workspace
 
 ```yaml

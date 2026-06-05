@@ -1,5 +1,20 @@
 import type { AgentGatePolicy } from "../core/policy.js";
 
+const credentialPathPatterns = [
+  ".env",
+  ".env.*",
+  ".ssh/**",
+  ".gnupg/**",
+  ".aws/**",
+  "**/*.pem",
+  "**/*.key",
+  "**/*_rsa",
+  "**/id_ed25519",
+  "**/secrets/**",
+  "**/.npmrc",
+  "**/.pypirc"
+];
+
 export const balancedPolicy = (): AgentGatePolicy => ({
   version: 1,
   mode: "enforce",
@@ -7,7 +22,7 @@ export const balancedPolicy = (): AgentGatePolicy => ({
     root: ".",
     readable: ["**"],
     writable: ["src/**", "tests/**", "docs/**", "examples/**", "package.json", "pnpm-lock.yaml", "README.md"],
-    neverRead: [".env", ".env.*", ".ssh/**", ".gnupg/**", "**/*.pem", "**/*_rsa", "**/id_ed25519"]
+    neverRead: [...credentialPathPatterns]
   },
   audit: {
     path: ".agentgate/audit.jsonl",
@@ -21,8 +36,8 @@ export const balancedPolicy = (): AgentGatePolicy => ({
       id: "deny-private-key-reads",
       effect: "deny",
       tools: ["fs.read", "mcp.tool", "read_file"],
-      paths: [".ssh/**", "**/*.pem", "**/*_rsa", "**/id_ed25519"],
-      reason: "Private key reads are blocked"
+      paths: [...credentialPathPatterns],
+      reason: "Credential reads are blocked"
     },
     {
       id: "ask-dangerous-shell",

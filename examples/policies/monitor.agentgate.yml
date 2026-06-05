@@ -1,24 +1,71 @@
 version: 1
 mode: monitor
 workspace:
-  root: "."
+  root: .
   readable:
     - "**"
   writable:
-    - "src/**"
-    - "tests/**"
-    - "docs/**"
+    - src/**
+    - tests/**
+    - docs/**
+    - examples/**
+    - package.json
+    - pnpm-lock.yaml
+    - README.md
   neverRead:
-    - ".env"
-    - ".ssh/**"
+    - .env
+    - .env.*
+    - .ssh/**
+    - .gnupg/**
+    - .aws/**
     - "**/*.pem"
+    - "**/*.key"
+    - "**/*_rsa"
+    - "**/id_ed25519"
+    - "**/secrets/**"
+    - "**/.npmrc"
+    - "**/.pypirc"
 audit:
-  path: ".agentgate/audit.jsonl"
+  path: .agentgate/audit.jsonl
   redactSecrets: true
 approval:
   mode: none
 rules:
-  - id: monitor-private-key-reads
+  - id: deny-private-key-reads
     effect: deny
-    tools: ["fs.read", "mcp.tool", "read_file"]
-    paths: [".ssh/**", "**/*.pem", "**/id_ed25519"]
+    tools:
+      - fs.read
+      - mcp.tool
+      - read_file
+    paths:
+      - .env
+      - .env.*
+      - .ssh/**
+      - .gnupg/**
+      - .aws/**
+      - "**/*.pem"
+      - "**/*.key"
+      - "**/*_rsa"
+      - "**/id_ed25519"
+      - "**/secrets/**"
+      - "**/.npmrc"
+      - "**/.pypirc"
+    reason: Credential reads are blocked
+  - id: ask-dangerous-shell
+    effect: ask
+    tools:
+      - shell.exec
+    commandRisk:
+      min: high
+    reason: High-risk shell commands require approval
+  - id: deny-metadata-fetch
+    effect: deny
+    tools:
+      - http.fetch
+      - mcp.tool
+      - fetch
+    urls:
+      denyPrivateNetworks: true
+      denyLinkLocal: true
+      denyLoopback: true
+    reason: Private, loopback, and metadata network fetches are blocked
