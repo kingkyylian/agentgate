@@ -12,5 +12,5 @@ AgentGate v0.1 is the local-first CLI foundation: policy evaluation, guard modul
 
 ## Dependency Notes
 
-- Keep `commander` on the current runtime-major until Commander 15 is verified against AgentGate's Node engine and CLI packaging assumptions.
+- Commander 15 is ESM-only and requires Node `>=22.12.0`; AgentGate's package engine now matches that runtime floor.
 - Review runtime dependency bumps separately from dev dependency bumps, even when CI is green.
