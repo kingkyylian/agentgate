@@ -41,14 +41,26 @@ gh release create vX.Y.Z --title "AgentGate vX.Y.Z" --notes "Release notes"
 
 ## Trusted Publishing
 
-Future releases should publish through `.github/workflows/publish.yml` instead of a local npm token.
+Future releases should publish through `.github/workflows/publish.yaml` instead of a local npm token.
 
-Configure the npm package trusted publisher before relying on the workflow:
+Configure the npm package trusted publisher before relying on the workflow. npm 11.16.0 or newer is required because the registry requires an explicit publish permission:
+
+```bash
+npx -y npm@11.16.0 trust github @kingkyylian/agentgate \
+  --file publish.yaml \
+  --repo kingkyylian/agentgate \
+  --env npm-publish \
+  --allow-publish \
+  --yes
+```
+
+Expected trusted publisher settings:
 
 - Provider: GitHub Actions
 - Organization or user: `kingkyylian`
 - Repository: `agentgate`
 - Workflow filename: `publish.yaml`
 - Environment: `npm-publish`
+- Permission: publish
 
 The workflow runs only when a non-prerelease GitHub Release is published from a `v*` tag. It verifies that the tag version matches `package.json`, checks that the npm version does not already exist, runs the release gates, and publishes with provenance.
