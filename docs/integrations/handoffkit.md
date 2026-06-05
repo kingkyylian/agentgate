@@ -1,14 +1,79 @@
 # HandoffKit Integration
 
-HandoffKit should include AgentGate audit summaries when asked.
+HandoffKit should include AgentGate audit summaries when asked. HandoffKit packages handoff context, while AgentGate provides local evidence of what the agent was allowed, denied, asked to approve, or redacted.
 
-Proposed command:
+## Fresh Checkout Example
+
+```bash
+pnpm install
+pnpm build
+node dist/cli/index.js logs --config agentgate.yml --format markdown
+```
+
+For a deterministic local example without running live tools, render the bundled redacted audit sample:
+
+```bash
+node --input-type=module -e 'import { readAuditRecords, renderAuditMarkdown } from "./dist/index.js"; const records = readAuditRecords("examples/reports/audit.jsonl", process.cwd()); console.log(renderAuditMarkdown(records));'
+```
+
+Expected output starts with:
+
+```text
+# AgentGate Audit Report
+
+## Summary
+
+- Total events: 4
+- Denied: 1
+- Asked: 1
+- Redacted: 1
+- Allowed: 1
+- Redaction matches: 3
+```
+
+If HandoffKit is installed, it can include this local summary:
 
 ```bash
 handoffkit pack --goal "finish MCP proxy" --include-agentgate-log
 ```
 
-Export shape:
+Without HandoffKit installed, the same handoff payload can be inspected directly:
+
+```bash
+node --input-type=module -e 'import { readAuditRecords, summarizeForHandoffKit } from "./dist/index.js"; const auditPath = "examples/reports/audit.jsonl"; const records = readAuditRecords(auditPath, process.cwd()); console.log(JSON.stringify(summarizeForHandoffKit(auditPath, records), null, 2));'
+```
+
+Expected output shape:
+
+```json
+{
+  "auditPath": "examples/reports/audit.jsonl",
+  "totals": {
+    "allowed": 1,
+    "denied": 1,
+    "asked": 1,
+    "redacted": 1
+  },
+  "highRiskEvents": [
+    {
+      "timestamp": "2026-06-02T12:00:00.000Z",
+      "toolName": "fs.read",
+      "effect": "deny",
+      "risk": "critical",
+      "reason": "Credential reads are blocked"
+    },
+    {
+      "timestamp": "2026-06-02T12:00:01.000Z",
+      "toolName": "shell.exec",
+      "effect": "ask",
+      "risk": "high",
+      "reason": "High-risk shell commands require approval"
+    }
+  ]
+}
+```
+
+## Export Contract
 
 ```ts
 export interface HandoffAgentGateSummary {
@@ -30,4 +95,8 @@ export interface HandoffAgentGateSummary {
 }
 ```
 
-Missing AgentGate logs should produce a warning, not fail a handoff packet.
+## Failure Modes
+
+- Missing AgentGate logs should produce a warning in HandoffKit, not fail a handoff packet.
+- In AgentGate alone, `readAuditRecords(".agentgate/missing.jsonl", process.cwd())` returns an empty list and `summarizeForHandoffKit(...)` returns zero totals.
+- The bundled example report is redacted; it must not expose raw secret paths or tokens.

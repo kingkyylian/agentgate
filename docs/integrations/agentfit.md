@@ -1,14 +1,53 @@
 # AgentFit Integration
 
-AgentFit should treat AgentGate as runtime policy evidence.
+AgentFit should treat AgentGate as local runtime-policy evidence. AgentFit answers "is this repo ready for an agent?", while AgentGate enforces the runtime boundary when tools run.
 
-Proposed command:
+## Fresh Checkout Example
+
+```bash
+pnpm install
+pnpm build
+node dist/cli/index.js init --preset balanced --force
+node dist/cli/index.js check
+```
+
+Expected `check` output:
+
+```text
+PASS policy: valid
+PASS mode: enforce
+PASS workspace: /path/to/repo
+PASS audit: .agentgate/audit.jsonl
+PASS rules: 3
+```
+
+If AgentFit is installed, it can call AgentGate readiness from its own CLI:
 
 ```bash
 agentfit eval --check-agentgate
 ```
 
-Readiness shape:
+Without AgentFit installed, the same local readiness shape can be inspected directly from AgentGate:
+
+```bash
+node --input-type=module -e 'import { loadPolicyFromPath, evaluateAgentGateReadiness } from "./dist/index.js"; const loaded = loadPolicyFromPath("agentgate.yml"); console.log(JSON.stringify(evaluateAgentGateReadiness(loaded.policy, loaded.path), null, 2));'
+```
+
+Expected output shape:
+
+```json
+{
+  "hasPolicy": true,
+  "policyPath": "agentgate.yml",
+  "mode": "enforce",
+  "protectsSecrets": true,
+  "protectsShell": true,
+  "protectsMcp": true,
+  "warnings": []
+}
+```
+
+## Readiness Contract
 
 ```ts
 export interface AgentGateReadiness {
@@ -22,10 +61,16 @@ export interface AgentGateReadiness {
 }
 ```
 
-Scoring:
+Suggested scoring:
 
 - `+3` valid `agentgate.yml`.
 - `+3` blocks secret file reads.
 - `+2` shell command ask/deny policy.
 - `+2` MCP policy or explicit non-use.
 - `-5` monitor-only policy without explanation.
+
+## Failure Modes
+
+- If `agentfit` is not installed, use the `node --input-type=module` command above; no cloud service or telemetry is required.
+- If `agentgate.yml` is missing, `evaluateAgentGateReadiness(null)` returns `hasPolicy: false` and a `No agentgate.yml policy found` warning.
+- If the policy is `monitor`, AgentFit should warn that runtime blocking is disabled.

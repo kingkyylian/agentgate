@@ -11,6 +11,13 @@ describe("integrations", () => {
     expect(readiness.protectsShell).toBe(true);
   });
 
+  it("reports missing AgentGate policy as an AgentFit readiness warning", () => {
+    const readiness = evaluateAgentGateReadiness(null);
+
+    expect(readiness.hasPolicy).toBe(false);
+    expect(readiness.warnings).toContain("No agentgate.yml policy found");
+  });
+
   it("summarizes high-risk events for HandoffKit", () => {
     const records: AuditRecord[] = [
       {
@@ -41,5 +48,17 @@ describe("integrations", () => {
     const summary = summarizeForHandoffKit(".agentgate/audit.jsonl", records);
     expect(summary.totals.denied).toBe(1);
     expect(summary.highRiskEvents[0]?.reason).toBe("Private key reads are blocked");
+  });
+
+  it("returns an empty HandoffKit summary when no AgentGate records are available", () => {
+    const summary = summarizeForHandoffKit(".agentgate/missing.jsonl", []);
+
+    expect(summary.totals).toEqual({
+      allowed: 0,
+      denied: 0,
+      asked: 0,
+      redacted: 0
+    });
+    expect(summary.highRiskEvents).toEqual([]);
   });
 });
