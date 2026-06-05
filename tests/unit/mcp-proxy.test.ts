@@ -52,6 +52,16 @@ describe("McpProxy", () => {
 
     expect(result.allowed).toBe(false);
     expect(JSON.stringify(result.error)).toContain("AgentGate denied");
+    expect(result.error).toMatchObject({
+      error: {
+        data: {
+          effect: "deny",
+          executed: false,
+          serverName: "filesystem",
+          toolName: "read_file"
+        }
+      }
+    });
   });
 
   it("returns an approval-required error for MCP ask decisions", () => {
@@ -86,6 +96,17 @@ describe("McpProxy", () => {
 
     expect(result.allowed).toBe(false);
     expect(JSON.stringify(result.error)).toContain("AgentGate approval required");
+    expect(result.error).toMatchObject({
+      error: {
+        data: {
+          effect: "ask",
+          executed: false,
+          nonInteractive: true,
+          serverName: "shell",
+          toolName: "shell.exec"
+        }
+      }
+    });
   });
 
   it("fails clearly when a requested MCP upstream is not configured", () => {
@@ -107,6 +128,6 @@ describe("McpProxy", () => {
       serverName: "shell"
     });
 
-    expect(() => proxy.start()).toThrow('No MCP upstream named "shell" configured in agentgate.yml');
+    expect(() => proxy.start()).toThrow('No MCP upstream named "shell" configured in agentgate.yml. Available upstreams: filesystem');
   });
 });

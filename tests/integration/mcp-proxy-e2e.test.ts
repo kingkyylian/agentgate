@@ -2,6 +2,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
+import { execa } from "execa";
 import { afterEach, describe, expect, it } from "vitest";
 import { renderPolicyYaml } from "../../src/index.js";
 import { balancedPolicy } from "../../src/presets/balanced.js";
@@ -21,6 +22,76 @@ afterEach(() => {
 });
 
 describe("agentgate mcp-proxy", () => {
+  it("reports missing config without a stack trace", async () => {
+    const root = tempRoot();
+
+    const result = await execa("node", [path.resolve("dist/cli/index.js"), "mcp-proxy"], {
+      cwd: root,
+      reject: false
+    });
+
+    expect(result.exitCode).toBe(1);
+    expect(result.stderr).toContain("FAIL mcp-proxy: No agentgate.yml found. Run agentgate init first.");
+    expect(result.stderr).not.toContain("at Command");
+  });
+
+  it("reports unknown upstream names with available server names", async () => {
+    const root = tempRoot();
+    const policy = balancedPolicy();
+    policy.mcp = {
+      upstreams: {
+        filesystem: {
+          command: "node",
+          args: [path.resolve("tests/fixtures/mcp-upstream.mjs")]
+        }
+      }
+    };
+    fs.writeFileSync(path.join(root, "agentgate.yml"), renderPolicyYaml(policy), "utf8");
+
+    const result = await execa("node", [path.resolve("dist/cli/index.js"), "mcp-proxy", "--server", "shell"], {
+      cwd: root,
+      reject: false
+    });
+
+    expect(result.exitCode).toBe(1);
+    expect(result.stderr).toContain('FAIL mcp-proxy: No MCP upstream named "shell" configured in agentgate.yml.');
+    expect(result.stderr).toContain("Available upstreams: filesystem");
+    expect(result.stderr).not.toContain("at Command");
+  });
+
+  it("reports invalid MCP config paths without a stack trace", async () => {
+    const root = tempRoot();
+    fs.writeFileSync(path.join(root, "agentgate.yml"), [
+      "version: 1",
+      "mode: enforce",
+      "workspace:",
+      "  root: .",
+      "  readable: ['**']",
+      "  writable: ['src/**']",
+      "  neverRead: []",
+      "audit:",
+      "  path: .agentgate/audit.jsonl",
+      "  redactSecrets: true",
+      "approval:",
+      "  mode: none",
+      "rules: []",
+      "mcp:",
+      "  upstreams:",
+      "    filesystem:",
+      "      command: node"
+    ].join("\n"), "utf8");
+
+    const result = await execa("node", [path.resolve("dist/cli/index.js"), "mcp-proxy", "--server", "filesystem"], {
+      cwd: root,
+      reject: false
+    });
+
+    expect(result.exitCode).toBe(1);
+    expect(result.stderr).toContain("FAIL mcp-proxy: Invalid AgentGate policy");
+    expect(result.stderr).toContain("mcp.upstreams.filesystem.args");
+    expect(result.stderr).not.toContain("at Command");
+  });
+
   it("forwards allowed calls to upstream and blocks denied calls before upstream", async () => {
     const root = tempRoot();
     const policy = balancedPolicy();

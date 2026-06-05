@@ -14,19 +14,25 @@ export const registerMcpProxyCommand = (program: Command): void => {
     .option("--config <path>", "Path to agentgate.yml")
     .option("--server <name>", "Configured upstream server name")
     .action((options: McpProxyOptions) => {
-      const loaded = loadPolicy(process.cwd(), options.config);
-      if (!loaded) throw new Error("No agentgate.yml found. Run agentgate init first.");
+      try {
+        const loaded = loadPolicy(process.cwd(), options.config);
+        if (!loaded) throw new Error("No agentgate.yml found. Run agentgate init first.");
 
-      const proxy = new McpProxy({
-        policy: loaded.policy,
-        policyPath: loaded.path,
-        cwd: process.cwd(),
-        ...(options.server ? { serverName: options.server } : {}),
-        onChildError: (message, error) => {
-          process.stderr.write(`${message}: ${error.message}\n`);
-          process.exit(1);
-        }
-      });
-      proxy.start();
+        const proxy = new McpProxy({
+          policy: loaded.policy,
+          policyPath: loaded.path,
+          cwd: process.cwd(),
+          ...(options.server ? { serverName: options.server } : {}),
+          onChildError: (message, error) => {
+            process.stderr.write(`${message}: ${error.message}\n`);
+            process.exit(1);
+          }
+        });
+        proxy.start();
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        process.stderr.write(`FAIL mcp-proxy: ${message}\n`);
+        process.exitCode = 1;
+      }
     });
 };

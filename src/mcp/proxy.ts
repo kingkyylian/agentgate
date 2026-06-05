@@ -18,7 +18,11 @@ const firstUpstream = (policy: AgentGatePolicy, requestedName?: string): { name:
   const upstreams = policy.mcp?.upstreams ?? {};
   const name = requestedName ?? Object.keys(upstreams)[0];
   const config = name ? upstreams[name] : undefined;
-  if (requestedName && !config) throw new Error(`No MCP upstream named "${requestedName}" configured in agentgate.yml`);
+  if (requestedName && !config) {
+    const available = Object.keys(upstreams);
+    const hint = available.length > 0 ? ` Available upstreams: ${available.join(", ")}` : " No MCP upstreams are configured.";
+    throw new Error(`No MCP upstream named "${requestedName}" configured in agentgate.yml.${hint}`);
+  }
   if (!name || !config) throw new Error("No MCP upstream configured in agentgate.yml");
   return { name, config };
 };
@@ -77,7 +81,12 @@ export class McpProxy {
           data: {
             ruleId: decision.ruleId,
             reason: decision.reason,
-            risk: decision.risk
+            risk: decision.risk,
+            effect: decision.effect,
+            executed: false,
+            serverName,
+            toolName: event.toolName,
+            ...(decision.effect === "ask" ? { nonInteractive: true } : {})
           }
         }
       }
