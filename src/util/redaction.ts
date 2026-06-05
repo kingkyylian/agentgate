@@ -14,6 +14,7 @@ const patterns: RedactionPattern[] = [
   { name: "anthropic-key", pattern: /sk-ant-[A-Za-z0-9_-]{20,}/g },
   { name: "aws-access-key", pattern: /AKIA[0-9A-Z]{16}/g },
   { name: "private-key-block", pattern: /-----BEGIN [^-]*PRIVATE KEY-----[\s\S]*?-----END [^-]*PRIVATE KEY-----/g },
+  { name: "secret-path", pattern: /(?:^|[\s"'`])(?:\.env(?:\.[^\s"'`]*)?|\.ssh\/[^\s"'`]+|\.gnupg\/[^\s"'`]+|\.aws\/[^\s"'`]+|[^\s"'`]*\/secrets\/[^\s"'`]+|[^\s"'`]+\.(?:pem|key)|[^\s"'`]*_rsa|[^\s"'`]*id_ed25519)(?=$|[\s"'`,}])/g },
   { name: "secret-assignment", pattern: /\b(api_key|token|secret|password)\s*=\s*["']?[^"'\s]+/gi }
 ];
 

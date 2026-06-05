@@ -7,6 +7,8 @@ const redactRecord = (record: AuditRecord): AuditRecord => {
   const input = redactUnknown("event.input", record.event.input);
   const output = redactUnknown("event.outputPreview", record.event.outputPreview);
   const command = record.event.command ? redactUnknown("event.command", record.event.command.join(" ")) : { value: undefined, matches: [] };
+  const eventPath = record.event.path ? redactUnknown("event.path", record.event.path) : { value: undefined, matches: [] };
+  const url = record.event.url ? redactUnknown("event.url", record.event.url) : { value: undefined, matches: [] };
 
   const commandValue = typeof command.value === "string" ? command.value.split(" ") : record.event.command;
 
@@ -16,11 +18,20 @@ const redactRecord = (record: AuditRecord): AuditRecord => {
       ...record.event,
       ...(input.matches.length > 0 ? { input: input.value } : {}),
       ...(output.matches.length > 0 ? { outputPreview: String(output.value) } : {}),
-      ...(command.matches.length > 0 && commandValue ? { command: commandValue } : {})
+      ...(command.matches.length > 0 && commandValue ? { command: commandValue } : {}),
+      ...(eventPath.matches.length > 0 ? { path: String(eventPath.value) } : {}),
+      ...(url.matches.length > 0 ? { url: String(url.value) } : {})
     },
     decision: {
       ...record.decision,
-      redactions: [...record.decision.redactions, ...input.matches, ...output.matches, ...command.matches]
+      redactions: [
+        ...record.decision.redactions,
+        ...input.matches,
+        ...output.matches,
+        ...command.matches,
+        ...eventPath.matches,
+        ...url.matches
+      ]
     }
   };
 };
