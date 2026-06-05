@@ -77,6 +77,36 @@ describe("agentgate mcp-proxy", () => {
     expect(stdoutLines.filter((line) => line.includes("upstream handled read_file"))).toHaveLength(1);
     expect(fs.existsSync(path.join(root, ".agentgate/audit.jsonl"))).toBe(true);
   });
+
+  it("exits with a clear error when the upstream process cannot start", async () => {
+    const root = tempRoot();
+    const policy = balancedPolicy();
+    policy.mcp = {
+      upstreams: {
+        broken: {
+          command: "agentgate-missing-mcp-upstream-command",
+          args: []
+        }
+      }
+    };
+    fs.writeFileSync(path.join(root, "agentgate.yml"), renderPolicyYaml(policy), "utf8");
+
+    const child = spawn("node", [path.resolve("dist/cli/index.js"), "mcp-proxy", "--server", "broken"], {
+      cwd: root,
+      stdio: ["pipe", "pipe", "pipe"]
+    });
+    children.push(child);
+
+    let stderr = "";
+    child.stderr.on("data", (chunk) => {
+      stderr += String(chunk);
+    });
+
+    const exit = await waitForExit(child);
+    expect(exit.code).toBe(1);
+    expect(stderr).toContain('AgentGate MCP upstream "broken" failed to start');
+    expect(stderr).toContain("ENOENT");
+  });
 });
 
 async function waitForLine(lines: string[], predicate: (line: string) => boolean): Promise<string> {
@@ -87,4 +117,10 @@ async function waitForLine(lines: string[], predicate: (line: string) => boolean
     await new Promise((resolve) => setTimeout(resolve, 25));
   }
   throw new Error(`Timed out waiting for line. Saw:\n${lines.join("\n")}`);
+}
+
+async function waitForExit(child: ChildProcessWithoutNullStreams): Promise<{ code: number | null; signal: NodeJS.Signals | null }> {
+  return new Promise((resolve) => {
+    child.on("exit", (code, signal) => resolve({ code, signal }));
+  });
 }

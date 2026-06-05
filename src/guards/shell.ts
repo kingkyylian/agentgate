@@ -17,6 +17,10 @@ export const classifyShellCommand = (command: string[]): ShellRisk => {
   if (/\brm\s+-[^\s]*r[^\s]*f[^\s]*\s+(?:\/|~)(?:\s|$)/.test(lower)) {
     return { risk: "critical", reason: "Recursive forced deletion of root or home is critical" };
   }
+  if (/\brm\s+-[^\s]*r[^\s]*f[^\s]*\s+(?:~\/)?\.(?:ssh|gnupg|aws)\b/.test(lower)
+    || /\brm\s+-[^\s]*r[^\s]*f[^\s]*\s+\/(?:users|home)\/[^/\s]+\/\.(?:ssh|gnupg|aws)\b/.test(lower)) {
+    return { risk: "critical", reason: "Recursive forced deletion of credential directories is critical" };
+  }
   if (/\b(?:mkfs|shutdown|reboot)\b/.test(lower)) {
     return { risk: "critical", reason: "System-level destructive command is critical" };
   }
@@ -38,6 +42,11 @@ export const classifyShellCommand = (command: string[]): ShellRisk => {
   if (/\bcat\s+(?:\.env|.*\/\.env|.*id_rsa|.*id_ed25519)\b/.test(lower)) {
     return { risk: "high", reason: "Command attempts to print secrets" };
   }
+  if (/\b(?:echo|printenv)\b.*\$?[a-z0-9_]*(?:token|secret|password|api_key|private_key)[a-z0-9_]*/.test(lower)
+    || /\benv\b.*\|\s*\bgrep\b.*(?:token|secret|password|api_key|private_key)/.test(lower)
+    || /\bgh\s+auth\s+token\b/.test(lower)) {
+    return { risk: "high", reason: "Command can expose authentication secrets" };
+  }
   if (/\b(?:npm|pnpm|yarn|pip|brew)\s+install\b/.test(lower)) {
     return { risk: "medium", reason: "Dependency installation changes local environment" };
   }
@@ -46,9 +55,6 @@ export const classifyShellCommand = (command: string[]): ShellRisk => {
   }
   if (/\bgit\s+push\b/.test(lower)) {
     return { risk: "medium", reason: "Git push changes remote state" };
-  }
-  if (/\bgh\s+auth\s+token\b/.test(lower)) {
-    return { risk: "medium", reason: "Command can expose GitHub token" };
   }
 
   return { risk: "low", reason: "Command matches low-risk heuristics" };

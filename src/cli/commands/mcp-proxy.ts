@@ -21,7 +21,11 @@ export const registerMcpProxyCommand = (program: Command): void => {
         policy: loaded.policy,
         policyPath: loaded.path,
         cwd: process.cwd(),
-        ...(options.server ? { serverName: options.server } : {})
+        ...(options.server ? { serverName: options.server } : {}),
+        onChildError: (message, error) => {
+          process.stderr.write(`${message}: ${error.message}\n`);
+          process.exit(1);
+        }
       });
       proxy.start();
     });

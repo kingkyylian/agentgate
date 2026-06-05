@@ -11,12 +11,14 @@ export interface McpProxyOptions {
   policyPath: string;
   cwd: string;
   serverName?: string;
+  onChildError?: (message: string, error: Error) => void;
 }
 
 const firstUpstream = (policy: AgentGatePolicy, requestedName?: string): { name: string; config: McpUpstreamConfig } => {
   const upstreams = policy.mcp?.upstreams ?? {};
   const name = requestedName ?? Object.keys(upstreams)[0];
   const config = name ? upstreams[name] : undefined;
+  if (requestedName && !config) throw new Error(`No MCP upstream named "${requestedName}" configured in agentgate.yml`);
   if (!name || !config) throw new Error("No MCP upstream configured in agentgate.yml");
   return { name, config };
 };
@@ -32,6 +34,7 @@ export class McpProxy {
       cwd: this.options.cwd,
       stdio: ["pipe", "pipe", "pipe"]
     });
+    this.child.on("error", (error) => this.handleChildError(upstream.name, error));
 
     forwardChildOutput(this.child, process.stdout);
 
@@ -99,5 +102,17 @@ export class McpProxy {
     }
 
     writeJsonLine(process.stdout, result.error);
+  }
+
+  private handleChildError(serverName: string, error: Error): void {
+    const message = `AgentGate MCP upstream "${serverName}" failed to start`;
+    this.child = null;
+
+    if (this.options.onChildError) {
+      this.options.onChildError(message, error);
+      return;
+    }
+
+    process.stderr.write(`${message}: ${error.message}\n`);
   }
 }

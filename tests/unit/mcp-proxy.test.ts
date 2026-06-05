@@ -87,4 +87,26 @@ describe("McpProxy", () => {
     expect(result.allowed).toBe(false);
     expect(JSON.stringify(result.error)).toContain("AgentGate approval required");
   });
+
+  it("fails clearly when a requested MCP upstream is not configured", () => {
+    const root = tempRoot();
+    const policy = balancedPolicy();
+    policy.mcp = {
+      upstreams: {
+        filesystem: {
+          command: "node",
+          args: ["server.js"]
+        }
+      }
+    };
+
+    const proxy = new McpProxy({
+      policy,
+      policyPath: path.join(root, "agentgate.yml"),
+      cwd: root,
+      serverName: "shell"
+    });
+
+    expect(() => proxy.start()).toThrow('No MCP upstream named "shell" configured in agentgate.yml');
+  });
 });
