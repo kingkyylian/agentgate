@@ -2,13 +2,13 @@
 
 AgentGate v0.1 is the local-first CLI foundation: policy evaluation, guard modules, CLI enforcement, MCP stdio proxy MVP, audit logs, and release packaging.
 
-## v0.2 Focus
+## v0.2 Complete
 
-- Tighten policy presets for common agent workflows.
-- Improve MCP proxy ergonomics around server config, denied calls, and non-interactive ask decisions.
-- Expand audit summaries with clearer redaction and review sections.
-- Add AgentFit and HandoffKit integration examples that can run from a fresh checkout.
-- Add focused regression coverage for shell-risk parsing and MCP proxy failure modes.
+- Tightened policy presets for common agent workflows.
+- Improved MCP proxy ergonomics around server config, denied calls, and non-interactive ask decisions.
+- Expanded audit summaries with clearer redaction and review sections.
+- Added AgentFit and HandoffKit integration examples that can run from a fresh checkout.
+- Added focused regression coverage for shell-risk parsing and MCP proxy failure modes.
 
 ## Dependency Notes
 

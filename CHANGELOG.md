@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.0
+
+- Raised the runtime floor to Node `>=22.12.0` and upgraded Commander to 15.
+- Tightened built-in policy presets and example policies around credential reads, common coding-agent flows, and private-network fetch protections.
+- Improved MCP proxy diagnostics for missing config, invalid policy schema, unknown upstream names, denied calls, non-interactive ask decisions, and child process startup failures.
+- Expanded shell-risk and MCP failure regression coverage for install pipes, destructive filesystem commands, token exposure, low-risk developer commands, denied MCP calls, approval-required MCP calls, invalid server config, and child process errors.
+- Expanded audit Markdown summaries with denied, asked, redacted, allowed, and redaction-match sections, plus stronger redaction for secret paths and token-bearing input.
+- Added copy-pastable AgentFit and HandoffKit integration examples with local fallback commands and expected outputs.
+
 ## 0.1.2
 
 - Added GitHub Actions trusted publishing with npm provenance for future releases.
