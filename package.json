@@ -1,6 +1,6 @@
 {
   "name": "@kingkyylian/agentgate",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A local firewall for AI coding agents and MCP tools.",
   "type": "module",
   "repository": {
