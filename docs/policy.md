@@ -68,6 +68,30 @@ Effects:
 
 For local `agentgate exec`, `ask` decisions can be approved in the terminal. For `agentgate mcp-proxy`, `ask` decisions are not interactive today; the proxy returns an approval-required JSON-RPC error and does not forward the call.
 
+## Machine-Readable Check Output
+
+Use JSON output when another tool or CI job needs stable readiness metadata:
+
+```bash
+agentgate check --format json
+agentgate check --strict --format json
+```
+
+The JSON contract is versioned with `schemaVersion: 1` and includes:
+
+- `ok`: true when the command should be treated as successful.
+- `status`: `pass`, `warn`, or `fail`.
+- `strict`: whether `--strict` was enabled.
+- `policyPath`: the resolved policy path, or `null` when no policy was found.
+- `workspaceRoot`: the resolved workspace root, or `null` when no policy was found.
+- `policy`: mode, audit path/redaction, approval mode, and rule count.
+- `checks`: all readiness checks with `name`, `status`, and `message`.
+- `warnings`: warning metadata with remediation text when available.
+- `failures`: failure metadata with remediation text when available.
+- `next`: suggested commands or remediation steps.
+
+In JSON mode, output is written to stdout as a single JSON object. Missing policies and strict-mode readiness failures still exit non-zero, but they do not add human-readable stderr lines that would break JSON parsers.
+
 ## Shell Risk
 
 AgentGate classifies commands into `low`, `medium`, `high`, and `critical`.

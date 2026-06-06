@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Made `agentgate check` more actionable with first-run guidance, readiness warnings, next-step hints, and `--strict` failure behavior for CI gates.
+- Added `agentgate check --format json` for automation-friendly readiness reports with warning and failure metadata.
 - Added `agentgate logs --review` for denied, asked, and redacted audit events without allowed-event noise.
 - Added actionable non-interactive MCP approval metadata with audit review guidance.
 - Added common setup policies for read-only review, docs maintenance, and package maintenance agent sessions.

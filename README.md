@@ -36,6 +36,7 @@ or run directly:
 npx @kingkyylian/agentgate@latest init
 npx @kingkyylian/agentgate@latest check
 npx @kingkyylian/agentgate@latest check --strict
+npx @kingkyylian/agentgate@latest check --format json
 ```
 
 ## Usage
@@ -60,6 +61,7 @@ agentgate logs --review
 ```
 
 Use `agentgate check --strict` in CI or readiness gates when warnings should fail the command.
+Use `agentgate check --format json` when automation needs stable readiness metadata.
 
 Start an MCP stdio proxy:
 
