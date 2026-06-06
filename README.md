@@ -121,4 +121,4 @@ AgentGate is designed as the runtime leg of a small agentic-development toolkit:
 
 ## Status
 
-This is an early local-first CLI. The current public release is v0.2, with tightened policy presets, clearer MCP proxy errors, expanded audit summaries, and fresh integration examples.
+This is an early local-first CLI. The current public release is v0.3, with actionable readiness checks, machine-readable check output, filtered audit review, MCP client setup recipes, and validated policy examples.
