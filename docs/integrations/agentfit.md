@@ -8,17 +8,22 @@ AgentFit should treat AgentGate as local runtime-policy evidence. AgentFit answe
 pnpm install
 pnpm build
 node dist/cli/index.js init --preset balanced --force
-node dist/cli/index.js check
+node dist/cli/index.js check --strict
 ```
 
-Expected `check` output:
+Expected `check --strict` output:
 
 ```text
 PASS policy: valid
 PASS mode: enforce
 PASS workspace: /path/to/repo
 PASS audit: .agentgate/audit.jsonl
+PASS audit redaction: enabled
+PASS credential read guard: configured
+PASS private network guard: configured
+PASS terminal approval: enabled
 PASS rules: 3
+NEXT review audit events: agentgate logs --review
 ```
 
 If AgentFit is installed, it can call AgentGate readiness from its own CLI:
@@ -68,6 +73,8 @@ Suggested scoring:
 - `+2` shell command ask/deny policy.
 - `+2` MCP policy or explicit non-use.
 - `-5` monitor-only policy without explanation.
+
+Use `agentgate check --strict` as a local gate when AgentFit should fail a repo readiness check on AgentGate warnings.
 
 ## Failure Modes
 

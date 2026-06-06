@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- Made `agentgate check` more actionable with first-run guidance, readiness warnings, next-step hints, and `--strict` failure behavior for CI gates.
+- Added `agentgate logs --review` for denied, asked, and redacted audit events without allowed-event noise.
+- Added actionable non-interactive MCP approval metadata with audit review guidance.
+- Added common setup policies for read-only review, docs maintenance, and package maintenance agent sessions.
+- Added a generic coding-agent integration guide covering shell gateway, MCP proxy, audit review, and policy starting points.
+
 ## 0.2.0
 
 - Raised the runtime floor to Node `>=22.12.0` and upgraded Commander to 15.

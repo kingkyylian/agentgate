@@ -102,6 +102,12 @@ describe("McpProxy", () => {
           effect: "ask",
           executed: false,
           nonInteractive: true,
+          auditPath: ".agentgate/audit.jsonl",
+          approval: {
+            required: true,
+            interactive: false,
+            reviewCommand: "agentgate logs --review"
+          },
           serverName: "shell",
           toolName: "shell.exec"
         }

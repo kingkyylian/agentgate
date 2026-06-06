@@ -23,7 +23,7 @@ If `--server` is omitted, AgentGate uses the first configured upstream. If a nam
 
 The proxy forwards normal JSON-RPC traffic. For `tools/call`, it creates a normalized `ToolEvent`, evaluates policy, writes an audit record, and either forwards the request or returns a structured JSON-RPC error.
 
-MCP ask-mode behavior is intentionally non-interactive in v0.1. When a proxied MCP call receives an `ask` decision, AgentGate does not forward the call to the upstream server. It returns an `AgentGate approval required for MCP tool call` JSON-RPC error and records the event as `ask` with `executed: false`.
+MCP ask-mode behavior is intentionally non-interactive today. When a proxied MCP call receives an `ask` decision, AgentGate does not forward the call to the upstream server. It returns an `AgentGate approval required for MCP tool call` JSON-RPC error and records the event as `ask` with `executed: false`.
 
 Denied and approval-required responses use JSON-RPC error code `-32000`. The `error.data` object includes:
 
@@ -32,6 +32,7 @@ Denied and approval-required responses use JSON-RPC error code `-32000`. The `er
 - `executed: false`
 - `serverName` and `toolName`
 - `nonInteractive: true` for MCP ask decisions
+- `auditPath` and `approval.reviewCommand` for MCP ask decisions, so clients can point users at `agentgate logs --review`
 
 Startup and config failures are reported to stderr as actionable CLI errors:
 
@@ -40,7 +41,7 @@ Startup and config failures are reported to stderr as actionable CLI errors:
 - Unknown upstream: `FAIL mcp-proxy: No MCP upstream named "shell" configured in agentgate.yml. Available upstreams: filesystem`
 - Child process spawn failure: `AgentGate MCP upstream "filesystem" failed to start: ...`
 
-V0.1 supports one selected upstream server per proxy process.
+The current proxy supports one selected upstream server per process.
 
 ## Local Smoke
 

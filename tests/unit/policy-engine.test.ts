@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { parse } from "yaml";
 import { describe, expect, it } from "vitest";
-import { PolicyEngine, policyForPreset, type AgentGatePolicy, type PresetName, type ToolEvent } from "../../src/index.js";
+import { loadPolicyFromPath, PolicyEngine, policyForPreset, type AgentGatePolicy, type PresetName, type ToolEvent } from "../../src/index.js";
 import { balancedPolicy } from "../../src/presets/balanced.js";
 import { strictPolicy } from "../../src/presets/strict.js";
 
@@ -20,6 +20,9 @@ const baseEvent = (partial: Partial<ToolEvent>): ToolEvent => ({
   metadata: {},
   ...partial
 });
+
+const loadExamplePolicy = (name: string): AgentGatePolicy =>
+  loadPolicyFromPath(path.resolve(`examples/policies/${name}.agentgate.yml`)).policy;
 
 describe("PolicyEngine", () => {
   it("denies a matching private key read", () => {
@@ -119,5 +122,59 @@ describe("PolicyEngine", () => {
     const examplePolicy = parse(fs.readFileSync(examplePath, "utf8"));
 
     expect(examplePolicy).toEqual(policyForPreset(preset));
+  });
+
+  it.each(["read-only-review", "docs-maintainer", "package-maintainer"])("loads the %s common setup example", (name) => {
+    expect(loadExamplePolicy(name).version).toBe(1);
+  });
+
+  it("keeps the read-only review example from writing files", () => {
+    const engine = new PolicyEngine(loadExamplePolicy("read-only-review"));
+
+    expect(engine.evaluate(baseEvent({
+      kind: "fs.read",
+      toolName: "fs.read",
+      path: "README.md"
+    }), context).effect).toBe("allow");
+    expect(engine.evaluate(baseEvent({
+      kind: "fs.write",
+      toolName: "fs.write",
+      path: "README.md"
+    }), context).effect).toBe("deny");
+  });
+
+  it("lets the docs maintainer example edit docs but not source", () => {
+    const engine = new PolicyEngine(loadExamplePolicy("docs-maintainer"));
+
+    expect(engine.evaluate(baseEvent({
+      kind: "fs.write",
+      toolName: "fs.write",
+      path: "docs/policy.md"
+    }), context).effect).toBe("allow");
+    expect(engine.evaluate(baseEvent({
+      kind: "fs.write",
+      toolName: "fs.write",
+      path: "src/index.ts"
+    }), context).effect).toBe("deny");
+  });
+
+  it("lets the package maintainer example edit release metadata and asks before installs", () => {
+    const engine = new PolicyEngine(loadExamplePolicy("package-maintainer"));
+
+    expect(engine.evaluate(baseEvent({
+      kind: "fs.write",
+      toolName: "fs.write",
+      path: "package.json"
+    }), context).effect).toBe("allow");
+    expect(engine.evaluate(baseEvent({
+      kind: "fs.write",
+      toolName: "fs.write",
+      path: "CHANGELOG.md"
+    }), context).effect).toBe("allow");
+    expect(engine.evaluate(baseEvent({
+      kind: "shell.exec",
+      toolName: "shell.exec",
+      command: ["pnpm", "install"]
+    }), context).effect).toBe("ask");
   });
 });

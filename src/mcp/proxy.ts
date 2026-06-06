@@ -86,7 +86,15 @@ export class McpProxy {
             executed: false,
             serverName,
             toolName: event.toolName,
-            ...(decision.effect === "ask" ? { nonInteractive: true } : {})
+            ...(decision.effect === "ask" ? {
+              nonInteractive: true,
+              auditPath: this.options.policy.audit.path,
+              approval: {
+                required: true,
+                interactive: false,
+                reviewCommand: "agentgate logs --review"
+              }
+            } : {})
           }
         }
       }

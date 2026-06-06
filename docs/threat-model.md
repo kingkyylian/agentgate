@@ -16,7 +16,7 @@ AgentGate is a policy gateway for AI agent tool calls. It is not an OS sandbox, 
 - Malicious local users with direct shell access.
 - Agents granted direct credentials outside the policy layer.
 - Kernel, container, browser, or network isolation.
-- Full shell semantics in v0.1; shell risk classification uses conservative heuristics.
+- Full shell semantics; shell risk classification uses conservative heuristics.
 - Every possible secret format.
 
 ## Trust Assumptions

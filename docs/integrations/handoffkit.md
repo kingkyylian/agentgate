@@ -8,6 +8,7 @@ HandoffKit should include AgentGate audit summaries when asked. HandoffKit packa
 pnpm install
 pnpm build
 node dist/cli/index.js logs --config agentgate.yml --format markdown
+node dist/cli/index.js logs --config agentgate.yml --review
 ```
 
 For a deterministic local example without running live tools, render the bundled redacted audit sample:
@@ -30,6 +31,8 @@ Expected output starts with:
 - Allowed: 1
 - Redaction matches: 3
 ```
+
+Use `agentgate logs --review` when the handoff only needs denied, asked, and redacted events without allowed-event noise.
 
 If HandoffKit is installed, it can include this local summary:
 

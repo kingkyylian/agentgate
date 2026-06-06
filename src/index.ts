@@ -13,7 +13,7 @@ export { classifyShellCommand, evaluateShellEvent, type ShellRisk } from "./guar
 export { normalizeMcpToolEvent } from "./guards/mcp.js";
 export type { AuditRecord } from "./audit/audit-record.js";
 export { appendAuditRecord, readAuditRecords } from "./audit/jsonl-sink.js";
-export { renderAuditMarkdown } from "./audit/markdown-report.js";
+export { renderAuditMarkdown, renderAuditReviewMarkdown } from "./audit/markdown-report.js";
 export { McpProxy, type McpProxyOptions } from "./mcp/proxy.js";
 export { toolCallToEvent, type JsonRpcRequest } from "./mcp/tool-map.js";
 export { evaluateAgentGateReadiness, type AgentGateReadiness } from "./integrations/agentfit.js";

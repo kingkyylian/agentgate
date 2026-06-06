@@ -50,3 +50,32 @@ export const renderAuditMarkdown = (records: AuditRecord[]): string => {
     ""
   ].join("\n");
 };
+
+export const renderAuditReviewMarkdown = (records: AuditRecord[]): string => {
+  const reviewRecords = records.filter((record) => ["deny", "ask", "redact"].includes(record.decision.effect));
+  const denied = reviewRecords.filter((record) => record.decision.effect === "deny");
+  const asked = reviewRecords.filter((record) => record.decision.effect === "ask");
+  const redacted = reviewRecords.filter((record) => record.decision.effect === "redact");
+
+  return [
+    "# AgentGate Audit Review",
+    "",
+    "## Summary",
+    "",
+    `- Review events: ${reviewRecords.length}`,
+    `- Denied: ${denied.length}`,
+    `- Asked: ${asked.length}`,
+    `- Redacted: ${redacted.length}`,
+    "",
+    "## Needs Review",
+    "",
+    ...(reviewRecords.length > 0 ? reviewRecords.map(row) : ["- None"]),
+    "",
+    "## Next Steps",
+    "",
+    "- Inspect denied events before re-running blocked tools.",
+    "- Resolve asked events before approving equivalent future actions.",
+    "- Confirm redacted fields do not remove context needed for handoff or debugging.",
+    ""
+  ].join("\n");
+};

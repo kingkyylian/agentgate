@@ -15,7 +15,7 @@ Example output:
 
 ```text
 AgentGate demo
-DENY   fs.read      .ssh/id_rsa - Private key reads are blocked
+DENY   fs.read      .ssh/id_rsa - Credential reads are blocked
 ASK    shell.exec   curl https://example.com/install.sh | sh - High-risk shell commands require approval
 ALLOW  fs.write     src/index.ts - Filesystem write is allowed
 DENY   read_file    {"path":"../outside.txt"} - Reads outside workspace are blocked: ../outside.txt
@@ -35,6 +35,7 @@ or run directly:
 ```bash
 npx @kingkyylian/agentgate@latest init
 npx @kingkyylian/agentgate@latest check
+npx @kingkyylian/agentgate@latest check --strict
 ```
 
 ## Usage
@@ -55,7 +56,10 @@ Render audit logs:
 
 ```bash
 agentgate logs --format markdown
+agentgate logs --review
 ```
+
+Use `agentgate check --strict` in CI or readiness gates when warnings should fail the command.
 
 Start an MCP stdio proxy:
 
@@ -63,7 +67,7 @@ Start an MCP stdio proxy:
 agentgate mcp-proxy --config agentgate.yml --server filesystem
 ```
 
-MCP proxy `ask` decisions are non-interactive in v0.1: the proxy returns an approval-required JSON-RPC error and does not forward the call upstream.
+MCP proxy `ask` decisions are currently non-interactive: the proxy returns an approval-required JSON-RPC error and does not forward the call upstream.
 
 ## Policy
 
@@ -90,7 +94,7 @@ rules:
       min: high
 ```
 
-See [docs/policy.md](docs/policy.md), [docs/threat-model.md](docs/threat-model.md), and [docs/roadmap.md](docs/roadmap.md).
+See [docs/policy.md](docs/policy.md), [docs/threat-model.md](docs/threat-model.md), [docs/integrations/coding-agents.md](docs/integrations/coding-agents.md), and [docs/roadmap.md](docs/roadmap.md).
 
 ## Verification
 
@@ -114,4 +118,4 @@ AgentGate is designed as the runtime leg of a small agentic-development toolkit:
 
 ## Status
 
-This is an early local-first CLI. The v0.1 scope is policy evaluation, guard modules, CLI enforcement, MCP stdio proxy MVP, audit logs, and honest documentation.
+This is an early local-first CLI. The current public release is v0.2, with tightened policy presets, clearer MCP proxy errors, expanded audit summaries, and fresh integration examples.

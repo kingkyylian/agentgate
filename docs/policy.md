@@ -18,6 +18,16 @@ Use `monitor` when introducing AgentGate into an existing workflow. It records w
 
 All presets protect `.env*`, `.ssh/**`, `.gnupg/**`, `.aws/**`, private keys, secret directories, `.npmrc`, and `.pypirc` from filesystem and MCP read paths.
 
+## Common Setup Examples
+
+Use the files in `examples/policies/` as copy-pastable starting points:
+
+- `read-only-review.agentgate.yml`: allows repo reads but denies all writes. Use it for review, triage, or audit-only agent sessions.
+- `docs-maintainer.agentgate.yml`: allows docs, examples, README, and changelog edits while denying source writes.
+- `package-maintainer.agentgate.yml`: allows source, tests, docs, examples, package metadata, and changelog edits. Medium-risk shell commands such as dependency installs require approval.
+
+All common setup examples keep audit redaction enabled, block credential reads, and deny private, loopback, and link-local fetches.
+
 ## Workspace
 
 ```yaml
@@ -40,7 +50,7 @@ rules:
     effect: deny
     tools: ["fs.read", "mcp.tool", "read_file"]
     paths: [".ssh/**", "**/*.pem", "**/id_ed25519"]
-    reason: "Private key reads are blocked"
+    reason: "Credential reads are blocked"
 ```
 
 Effects:
@@ -50,7 +60,7 @@ Effects:
 - `ask`: require approval.
 - `redact`: redact matching output/input fields.
 
-For local `agentgate exec`, `ask` decisions can be approved in the terminal. For `agentgate mcp-proxy`, `ask` decisions are not interactive in v0.1; the proxy returns an approval-required JSON-RPC error and does not forward the call.
+For local `agentgate exec`, `ask` decisions can be approved in the terminal. For `agentgate mcp-proxy`, `ask` decisions are not interactive today; the proxy returns an approval-required JSON-RPC error and does not forward the call.
 
 ## Shell Risk
 
@@ -79,4 +89,4 @@ The HTTP guard can block:
 - `192.168.0.0/16`
 - `169.254.0.0/16`
 - `.local`
-- IPv6 loopback/link-local/private ranges covered by the v0.1 heuristics
+- IPv6 loopback/link-local/private ranges covered by the current heuristics
