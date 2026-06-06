@@ -7,6 +7,7 @@
 - Added actionable non-interactive MCP approval metadata with audit review guidance.
 - Added common setup policies for read-only review, docs maintenance, and package maintenance agent sessions.
 - Added a generic coding-agent integration guide covering shell gateway, MCP proxy, audit review, and policy starting points.
+- Added CI coverage that validates packaged example policies and keeps policy documentation references in sync.
 
 ## 0.2.0
 

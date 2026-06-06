@@ -18,13 +18,19 @@ Use `monitor` when introducing AgentGate into an existing workflow. It records w
 
 All presets protect `.env*`, `.ssh/**`, `.gnupg/**`, `.aws/**`, private keys, secret directories, `.npmrc`, and `.pypirc` from filesystem and MCP read paths.
 
+The preset examples are packaged for copy-paste use:
+
+- `examples/policies/balanced.agentgate.yml`: normal coding-agent sessions with source, test, docs, examples, and package metadata writes.
+- `examples/policies/strict.agentgate.yml`: narrower source/test/docs work where medium-risk shell commands require approval.
+- `examples/policies/monitor.agentgate.yml`: rollout and audit sessions that record would-block decisions without enforcing them.
+
 ## Common Setup Examples
 
 Use the files in `examples/policies/` as copy-pastable starting points:
 
-- `read-only-review.agentgate.yml`: allows repo reads but denies all writes. Use it for review, triage, or audit-only agent sessions.
-- `docs-maintainer.agentgate.yml`: allows docs, examples, README, and changelog edits while denying source writes.
-- `package-maintainer.agentgate.yml`: allows source, tests, docs, examples, package metadata, and changelog edits. Medium-risk shell commands such as dependency installs require approval.
+- `examples/policies/read-only-review.agentgate.yml`: allows repo reads but denies all writes. Use it for review, triage, or audit-only agent sessions.
+- `examples/policies/docs-maintainer.agentgate.yml`: allows docs, examples, README, and changelog edits while denying source writes.
+- `examples/policies/package-maintainer.agentgate.yml`: allows source, tests, docs, examples, package metadata, and changelog edits. Medium-risk shell commands such as dependency installs require approval.
 
 All common setup examples keep audit redaction enabled, block credential reads, and deny private, loopback, and link-local fetches.
 
