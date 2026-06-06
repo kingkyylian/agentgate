@@ -2,7 +2,7 @@
   "mcpServers": {
     "agentgate-filesystem": {
       "command": "agentgate",
-      "args": ["mcp-proxy", "--server", "filesystem"]
+      "args": ["mcp-proxy", "--config", "agentgate.yml", "--server", "filesystem"]
     }
   }
 }

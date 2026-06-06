@@ -14,4 +14,26 @@ describe("integration docs", () => {
     expect(doc).toContain("examples/policies/docs-maintainer.agentgate.yml");
     expect(doc).toContain("examples/policies/package-maintainer.agentgate.yml");
   });
+
+  it("documents copy-ready MCP client recipes and keeps referenced paths valid", () => {
+    const doc = fs.readFileSync(path.resolve("docs/integrations/coding-agents.md"), "utf8");
+
+    expect(doc).toContain("### Global AgentGate CLI");
+    expect(doc).toContain('"command": "agentgate"');
+    expect(doc).toContain("### Repo-local Node command");
+    expect(doc).toContain('"command": "node"');
+    expect(doc).toContain("### Registry-backed npx command");
+    expect(doc).toContain('"command": "npx"');
+    expect(doc).toContain("audit.path");
+    expect(doc).toContain('approval.reviewCommand: "agentgate logs --review"');
+
+    const referencedPaths = [...doc.matchAll(/`((?:docs|examples)\/[^`]+)`/g)]
+      .map((match) => match[1])
+      .filter((referencedPath): referencedPath is string => referencedPath !== undefined);
+
+    expect(referencedPaths).toContain("examples/mcp/sample-client-config.json");
+    for (const referencedPath of referencedPaths) {
+      expect(fs.existsSync(path.resolve(referencedPath))).toBe(true);
+    }
+  });
 });
