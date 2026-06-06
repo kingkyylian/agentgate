@@ -14,6 +14,36 @@ const tempRoot = (): string => {
   return root;
 };
 
+const auditRecord = (
+  root: string,
+  id: string,
+  effect: AuditRecord["decision"]["effect"],
+  reason: string,
+  timestamp: string
+): AuditRecord => ({
+  id,
+  timestamp,
+  event: {
+    id,
+    timestamp,
+    kind: effect === "ask" ? "shell.exec" : "fs.read",
+    toolName: effect === "ask" ? "shell.exec" : "fs.read",
+    cwd: root,
+    metadata: {},
+    ...(effect === "ask" ? { command: ["pnpm", "install"] } : { path: `${id}.txt` })
+  },
+  decision: {
+    effect,
+    risk: effect === "allow" ? "low" : "high",
+    ruleId: `${effect}-rule`,
+    reason,
+    redactions: effect === "redact" ? [{ field: "event.outputPreview", pattern: "token" }] : [],
+    warnings: []
+  },
+  durationMs: 1,
+  executed: effect === "allow" || effect === "redact"
+});
+
 afterEach(() => {
   for (const root of roots.splice(0)) fs.rmSync(root, { recursive: true, force: true });
 });
@@ -192,5 +222,70 @@ describe("agentgate policy/logs", () => {
     expect(result.stdout).toContain("High-risk shell commands require approval");
     expect(result.stdout).toContain("Token-like output was redacted");
     expect(result.stdout).not.toContain("Allowed docs read");
+  });
+
+  it("filters audit review markdown by effect and recent entries", async () => {
+    const root = tempRoot();
+    fs.writeFileSync(path.join(root, "agentgate.yml"), renderPolicyYaml(balancedPolicy()), "utf8");
+    fs.mkdirSync(path.join(root, ".agentgate"), { recursive: true });
+    const records = [
+      auditRecord(root, "deny-old", "deny", "Old denied read", "2026-06-02T12:00:00.000Z"),
+      auditRecord(root, "ask", "ask", "Asked install", "2026-06-02T12:00:01.000Z"),
+      auditRecord(root, "deny-new", "deny", "New denied read", "2026-06-02T12:00:02.000Z"),
+      auditRecord(root, "redact", "redact", "Token redacted", "2026-06-02T12:00:03.000Z"),
+      auditRecord(root, "allow", "allow", "Allowed read", "2026-06-02T12:00:04.000Z")
+    ];
+    fs.writeFileSync(path.join(root, ".agentgate/audit.jsonl"), `${records.map((record) => JSON.stringify(record)).join("\n")}\n`, "utf8");
+
+    const result = await execa("node", [
+      path.resolve("dist/cli/index.js"),
+      "logs",
+      "--review",
+      "--effect",
+      "deny",
+      "--limit",
+      "1"
+    ], { cwd: root });
+
+    expect(result.stdout).toContain("# AgentGate Audit Review");
+    expect(result.stdout).toContain("- Review events: 1");
+    expect(result.stdout).toContain("- Denied: 1");
+    expect(result.stdout).toContain("- Asked: 0");
+    expect(result.stdout).toContain("- Redacted: 0");
+    expect(result.stdout).toContain("New denied read");
+    expect(result.stdout).not.toContain("Old denied read");
+    expect(result.stdout).not.toContain("Asked install");
+    expect(result.stdout).not.toContain("Token redacted");
+    expect(result.stdout).not.toContain("Allowed read");
+  });
+
+  it("keeps filtered audit review JSONL output as raw records", async () => {
+    const root = tempRoot();
+    fs.writeFileSync(path.join(root, "agentgate.yml"), renderPolicyYaml(balancedPolicy()), "utf8");
+    fs.mkdirSync(path.join(root, ".agentgate"), { recursive: true });
+    const records = [
+      auditRecord(root, "ask-old", "ask", "Old ask", "2026-06-02T12:00:00.000Z"),
+      auditRecord(root, "deny", "deny", "Denied read", "2026-06-02T12:00:01.000Z"),
+      auditRecord(root, "ask-new", "ask", "New ask", "2026-06-02T12:00:02.000Z")
+    ];
+    fs.writeFileSync(path.join(root, ".agentgate/audit.jsonl"), `${records.map((record) => JSON.stringify(record)).join("\n")}\n`, "utf8");
+
+    const result = await execa("node", [
+      path.resolve("dist/cli/index.js"),
+      "logs",
+      "--review",
+      "--format",
+      "jsonl",
+      "--effect",
+      "ask",
+      "--limit",
+      "1"
+    ], { cwd: root });
+    const lines = result.stdout.split("\n").filter(Boolean);
+    const parsed = lines.map((line) => JSON.parse(line) as AuditRecord);
+
+    expect(lines).toHaveLength(1);
+    expect(parsed[0]?.id).toBe("ask-new");
+    expect(parsed[0]?.decision.effect).toBe("ask");
   });
 });

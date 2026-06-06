@@ -33,6 +33,7 @@ Expected output starts with:
 ```
 
 Use `agentgate logs --review` when the handoff only needs denied, asked, and redacted events without allowed-event noise.
+Use `agentgate logs --review --effect deny,ask --limit 20` to keep large audit handoffs focused on recent blocked or approval-required events.
 
 If HandoffKit is installed, it can include this local summary:
 

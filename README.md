@@ -58,6 +58,7 @@ Render audit logs:
 ```bash
 agentgate logs --format markdown
 agentgate logs --review
+agentgate logs --review --effect deny,ask --limit 20
 ```
 
 Use `agentgate check --strict` in CI or readiness gates when warnings should fail the command.

@@ -64,6 +64,13 @@ After a session, review only denied, asked, and redacted events:
 node dist/cli/index.js logs --review
 ```
 
+Filter large audit files by decision effect and recent matching events:
+
+```bash
+node dist/cli/index.js logs --review --effect deny,ask --limit 20
+node dist/cli/index.js logs --review --format jsonl --effect redact --limit 10
+```
+
 Use the full report when you need allowed-event context too:
 
 ```bash
