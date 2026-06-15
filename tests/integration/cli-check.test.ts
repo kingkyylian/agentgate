@@ -55,6 +55,10 @@ describe("agentgate init/check", () => {
       strict: boolean;
       policyPath: string | null;
       workspaceRoot: string | null;
+      readiness: {
+        mcp: { configured: boolean; upstreams: string[]; setupCommand: string | null };
+        hygiene: { checkpointIgnore: string; packageSmoke: string };
+      };
       checks: Array<{ name: string; status: string; message: string }>;
       warnings: unknown[];
       failures: unknown[];
@@ -68,16 +72,162 @@ describe("agentgate init/check", () => {
     expect(output.strict).toBe(false);
     expect(output.policyPath).toBe(path.join(realRoot, "agentgate.yml"));
     expect(output.workspaceRoot).toBe(realRoot);
+    expect(output.readiness.mcp).toEqual({
+      configured: false,
+      upstreams: [],
+      setupCommand: null
+    });
+    expect(output.readiness.hygiene).toEqual({
+      checkpointIgnore: "skip",
+      packageSmoke: "skip"
+    });
     expect(output.warnings).toEqual([]);
     expect(output.failures).toEqual([]);
     expect(output.checks).toEqual(expect.arrayContaining([
       expect.objectContaining({ name: "policy", status: "pass", message: "valid" }),
       expect.objectContaining({ name: "audit redaction", status: "pass", message: "enabled" }),
       expect.objectContaining({ name: "private network guard", status: "pass", message: "configured" }),
-      expect.objectContaining({ name: "terminal approval", status: "pass", message: "enabled" })
+      expect.objectContaining({ name: "terminal approval", status: "pass", message: "enabled" }),
+      expect.objectContaining({ name: "mcp proxy", status: "pass", message: "not configured" })
     ]));
     expect(output.next).toEqual(expect.arrayContaining([
       expect.objectContaining({ name: "review audit events", command: "agentgate logs --review" })
+    ]));
+  });
+
+  it("prints MCP and package-hygiene metadata for automation", async () => {
+    const root = tempRoot();
+    await execa("node", [path.resolve("dist/cli/index.js"), "init"], { cwd: root });
+    const policyPath = path.join(root, "agentgate.yml");
+    fs.appendFileSync(policyPath, [
+      "",
+      "mcp:",
+      "  upstreams:",
+      "    filesystem:",
+      "      command: node",
+      "      args: [server.mjs]"
+    ].join("\n"), "utf8");
+    fs.mkdirSync(path.join(root, "docs/checkpoints"), { recursive: true });
+    fs.writeFileSync(path.join(root, ".gitignore"), ["docs/checkpoints/", "*.tgz", ""].join("\n"), "utf8");
+    fs.writeFileSync(path.join(root, "package.json"), JSON.stringify({
+      scripts: {
+        "smoke:package": "node scripts/package-smoke.mjs"
+      }
+    }), "utf8");
+
+    const result = await execa("node", [path.resolve("dist/cli/index.js"), "check", "--format", "json"], { cwd: root });
+    const output = JSON.parse(result.stdout) as {
+      ok: boolean;
+      status: string;
+      readiness: {
+        mcp: { configured: boolean; upstreams: string[]; setupCommand: string | null };
+        hygiene: { checkpointIgnore: string; packageSmoke: string };
+      };
+      checks: Array<{ name: string; status: string; message: string }>;
+      warnings: unknown[];
+    };
+
+    expect(output.ok).toBe(true);
+    expect(output.status).toBe("pass");
+    expect(output.readiness.mcp).toEqual({
+      configured: true,
+      upstreams: ["filesystem"],
+      setupCommand: "agentgate mcp setup --server filesystem --launch global"
+    });
+    expect(output.readiness.hygiene).toEqual({
+      checkpointIgnore: "pass",
+      packageSmoke: "pass"
+    });
+    expect(output.warnings).toEqual([]);
+    expect(output.checks).toEqual(expect.arrayContaining([
+      expect.objectContaining({ name: "mcp proxy", status: "pass", message: "configured: filesystem" }),
+      expect.objectContaining({ name: "checkpoint ignore", status: "pass", message: "configured" }),
+      expect.objectContaining({ name: "package smoke", status: "pass", message: "configured" })
+    ]));
+  });
+
+  it("warns about unsafe audit paths and package hygiene gaps", async () => {
+    const root = tempRoot();
+    fs.mkdirSync(path.join(root, "docs/checkpoints"), { recursive: true });
+    fs.writeFileSync(path.join(root, ".gitignore"), "node_modules/\n", "utf8");
+    fs.writeFileSync(path.join(root, "package.json"), JSON.stringify({
+      scripts: {
+        "smoke:package": "npm pack --dry-run"
+      }
+    }), "utf8");
+    fs.writeFileSync(
+      path.join(root, "agentgate.yml"),
+      [
+        "version: 1",
+        "mode: enforce",
+        "workspace:",
+        '  root: "."',
+        '  readable: ["**"]',
+        '  writable: ["src/**"]',
+        '  neverRead: [".env", ".ssh/**"]',
+        "audit:",
+        '  path: "../agentgate-audit.jsonl"',
+        "  redactSecrets: true",
+        "approval:",
+        '  mode: "terminal"',
+        "rules:",
+        "  - id: deny-private-key-reads",
+        "    effect: deny",
+        '    tools: ["fs.read", "mcp.tool", "read_file"]',
+        '    paths: [".ssh/**", ".env"]',
+        "  - id: deny-metadata-fetch",
+        "    effect: deny",
+        '    tools: ["http.fetch", "mcp.tool", "fetch"]',
+        "    urls:",
+        "      denyPrivateNetworks: true",
+        "      denyLinkLocal: true",
+        "      denyLoopback: true"
+      ].join("\n"),
+      "utf8"
+    );
+
+    const result = await execa("node", [path.resolve("dist/cli/index.js"), "check", "--format", "json"], { cwd: root });
+    const output = JSON.parse(result.stdout) as {
+      ok: boolean;
+      status: string;
+      readiness: {
+        mcp: { configured: boolean; upstreams: string[]; setupCommand: string | null };
+        hygiene: { checkpointIgnore: string; packageSmoke: string };
+      };
+      warnings: Array<{ name: string; message: string; remediation?: string }>;
+      checks: Array<{ name: string; status: string; message: string }>;
+    };
+
+    expect(output.ok).toBe(true);
+    expect(output.status).toBe("warn");
+    expect(output.readiness.mcp).toEqual({
+      configured: false,
+      upstreams: [],
+      setupCommand: null
+    });
+    expect(output.readiness.hygiene).toEqual({
+      checkpointIgnore: "warn",
+      packageSmoke: "warn"
+    });
+    expect(output.warnings).toEqual(expect.arrayContaining([
+      {
+        name: "audit path",
+        message: "outside workspace",
+        remediation: "store audit logs under the workspace, for example .agentgate/audit.jsonl"
+      },
+      {
+        name: "checkpoint ignore",
+        message: "docs/checkpoints/ is not ignored",
+        remediation: "add docs/checkpoints/ to .gitignore"
+      },
+      {
+        name: "package smoke",
+        message: "missing hardened package smoke",
+        remediation: "set scripts.smoke:package to node scripts/package-smoke.mjs"
+      }
+    ]));
+    expect(output.checks).toEqual(expect.arrayContaining([
+      expect.objectContaining({ name: "mcp proxy", status: "pass", message: "not configured" })
     ]));
   });
 

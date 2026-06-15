@@ -85,12 +85,23 @@ The JSON contract is versioned with `schemaVersion: 1` and includes:
 - `policyPath`: the resolved policy path, or `null` when no policy was found.
 - `workspaceRoot`: the resolved workspace root, or `null` when no policy was found.
 - `policy`: mode, audit path/redaction, approval mode, and rule count.
+- `readiness`: MCP proxy and package-hygiene metadata for automation.
 - `checks`: all readiness checks with `name`, `status`, and `message`.
 - `warnings`: warning metadata with remediation text when available.
 - `failures`: failure metadata with remediation text when available.
 - `next`: suggested commands or remediation steps.
 
 In JSON mode, output is written to stdout as a single JSON object. Missing policies and strict-mode readiness failures still exit non-zero, but they do not add human-readable stderr lines that would break JSON parsers.
+
+The readiness metadata includes:
+
+- `readiness.mcp.configured`: whether `mcp.upstreams` is configured.
+- `readiness.mcp.upstreams`: configured MCP upstream names.
+- `readiness.mcp.setupCommand`: a generated `agentgate mcp setup` command for the first upstream, or `null`.
+- `readiness.hygiene.checkpointIgnore`: `pass`, `warn`, or `skip` for `docs/checkpoints/` ignore coverage.
+- `readiness.hygiene.packageSmoke`: `pass`, `warn`, or `skip` for hardened package smoke coverage.
+
+`agentgate check` also warns when audit logs are configured outside the workspace, when `docs/checkpoints/` exists but is not ignored, or when a package has no hardened `smoke:package` script.
 
 ## Policy Fixture Tests
 
