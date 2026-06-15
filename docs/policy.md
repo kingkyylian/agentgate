@@ -92,6 +92,31 @@ The JSON contract is versioned with `schemaVersion: 1` and includes:
 
 In JSON mode, output is written to stdout as a single JSON object. Missing policies and strict-mode readiness failures still exit non-zero, but they do not add human-readable stderr lines that would break JSON parsers.
 
+## Policy Fixture Tests
+
+Use `agentgate policy test` when a repo needs executable policy expectations checked into source control:
+
+```bash
+agentgate policy test --cases examples/policy-tests/basic.agentgate-tests.yml
+```
+
+Fixture files are YAML and use `ToolEvent` fields with a small expectation block:
+
+```yaml
+version: 1
+cases:
+  - name: blocks credential reads
+    event:
+      kind: fs.read
+      toolName: fs.read
+      path: .ssh/id_rsa
+    expect:
+      effect: deny
+      ruleId: deny-private-key-reads
+```
+
+Each case supports filesystem, shell, HTTP, and MCP-style events through the same policy engine used by `agentgate mcp-proxy` and `agentgate exec`. `expect.effect` is required; `expect.ruleId` and `expect.risk` are optional. The command exits non-zero when any case fails.
+
 ## Shell Risk
 
 AgentGate classifies commands into `low`, `medium`, `high`, and `critical`.

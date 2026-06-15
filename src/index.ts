@@ -11,6 +11,7 @@ export { evaluateHttpEvent } from "./guards/http.js";
 export { evaluateSecretEvent } from "./guards/secret.js";
 export { classifyShellCommand, evaluateShellEvent, type ShellRisk } from "./guards/shell.js";
 export { normalizeMcpToolEvent } from "./guards/mcp.js";
+export { policyFixtureFileSchema, runPolicyFixtureCases, type PolicyFixtureFile, type PolicyFixtureRunResult } from "./policy/fixtures.js";
 export type { AuditRecord } from "./audit/audit-record.js";
 export { appendAuditRecord, readAuditRecords } from "./audit/jsonl-sink.js";
 export { renderAuditMarkdown, renderAuditReviewMarkdown } from "./audit/markdown-report.js";

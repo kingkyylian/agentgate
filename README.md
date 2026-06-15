@@ -61,6 +61,12 @@ agentgate logs --review
 agentgate logs --review --effect deny,ask --limit 20
 ```
 
+Keep policy expectations under version control:
+
+```bash
+agentgate policy test --cases examples/policy-tests/basic.agentgate-tests.yml
+```
+
 Use `agentgate check --strict` in CI or readiness gates when warnings should fail the command.
 Use `agentgate check --format json` when automation needs stable readiness metadata.
 
@@ -103,6 +109,7 @@ See [docs/policy.md](docs/policy.md), [docs/threat-model.md](docs/threat-model.m
 
 ```bash
 pnpm check
+node dist/cli/index.js policy test --cases examples/policy-tests/basic.agentgate-tests.yml
 pnpm test tests/integration/mcp-proxy-e2e.test.ts
 pnpm demo
 npm pack --dry-run

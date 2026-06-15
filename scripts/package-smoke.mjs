@@ -11,6 +11,7 @@ const required = new Set([
   "dist/cli/index.js",
   "docs/policy.md",
   "docs/threat-model.md",
+  "examples/policy-tests/basic.agentgate-tests.yml",
   "examples/policies/balanced.agentgate.yml"
 ]);
 
