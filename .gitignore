@@ -2,6 +2,7 @@ node_modules/
 dist/
 .agentgate/
 coverage/
+docs/checkpoints/
 *.tgz
 .env
 .env.*

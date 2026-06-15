@@ -26,6 +26,7 @@
     "SECURITY.md",
     "CONTRIBUTING.md",
     "docs",
+    "!docs/checkpoints/**",
     "examples"
   ],
   "scripts": {
@@ -33,7 +34,7 @@
     "check": "pnpm typecheck && pnpm test",
     "demo": "node dist/cli/index.js demo",
     "prepack": "pnpm build",
-    "smoke:package": "npm pack --dry-run",
+    "smoke:package": "node scripts/package-smoke.mjs",
     "smoke:install": "node scripts/install-smoke.mjs",
     "test": "pnpm build && vitest run",
     "typecheck": "tsc --noEmit"
