@@ -10,6 +10,8 @@ interface LogsOptions {
   review?: boolean;
   effect?: string;
   limit?: string;
+  since?: string;
+  until?: string;
 }
 
 type AuditEffect = AuditRecord["decision"]["effect"];
@@ -43,15 +45,36 @@ const parseLimit = (value?: string): number | null => {
   return limit;
 };
 
+const parseTimestamp = (name: string, value?: string): number | null => {
+  if (value === undefined) return null;
+
+  const timestamp = Date.parse(value);
+  if (Number.isNaN(timestamp)) {
+    throw new Error(`Unsupported audit ${name}: ${value}. Expected an ISO timestamp.`);
+  }
+
+  return timestamp;
+};
+
 const filterAuditRecords = (records: AuditRecord[], options: LogsOptions): AuditRecord[] => {
   const effects = parseEffects(options.effect);
   const limit = parseLimit(options.limit);
+  const since = parseTimestamp("since", options.since);
+  const until = parseTimestamp("until", options.until);
   let outputRecords = options.review === true
     ? records.filter((record) => reviewEffects.has(record.decision.effect))
     : records;
 
   if (effects !== null) {
     outputRecords = outputRecords.filter((record) => effects.has(record.decision.effect));
+  }
+
+  if (since !== null) {
+    outputRecords = outputRecords.filter((record) => Date.parse(record.timestamp) >= since);
+  }
+
+  if (until !== null) {
+    outputRecords = outputRecords.filter((record) => Date.parse(record.timestamp) <= until);
   }
 
   if (limit !== null) {
@@ -70,6 +93,8 @@ export const registerLogsCommand = (program: Command): void => {
     .option("--review", "Show only denied, asked, and redacted events for audit review.")
     .option("--effect <effects>", "Comma-separated decision effects to include: allow, deny, ask, redact.")
     .option("--limit <count>", "Show only the most recent matching audit records.")
+    .option("--since <timestamp>", "Include records at or after an ISO timestamp.")
+    .option("--until <timestamp>", "Include records at or before an ISO timestamp.")
     .action((options: LogsOptions) => {
       if (options.format !== undefined && !["markdown", "jsonl"].includes(options.format)) {
         throw new Error(`Unsupported logs format: ${options.format}. Expected markdown or jsonl.`);

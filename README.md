@@ -59,6 +59,7 @@ Render audit logs:
 agentgate logs --format markdown
 agentgate logs --review
 agentgate logs --review --effect deny,ask --limit 20
+agentgate logs --review --since 2026-06-02T12:00:00.000Z --until 2026-06-02T13:00:00.000Z
 ```
 
 Keep policy expectations under version control:

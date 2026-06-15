@@ -9,6 +9,7 @@ describe("integration docs", () => {
     expect(doc).toContain("node dist/cli/index.js check --strict");
     expect(doc).toContain("node dist/cli/index.js exec -- npm test");
     expect(doc).toContain("node dist/cli/index.js logs --review");
+    expect(doc).toContain("node dist/cli/index.js logs --review --since 2026-06-02T12:00:00.000Z --until 2026-06-02T13:00:00.000Z");
     expect(doc).toContain("agentgate mcp setup --server filesystem --launch global");
     expect(doc).toContain("agentgate mcp-proxy --config agentgate.yml --server filesystem");
     expect(doc).toContain("examples/policies/read-only-review.agentgate.yml");

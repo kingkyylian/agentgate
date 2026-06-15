@@ -132,6 +132,7 @@ Filter large audit files by decision effect and recent matching events:
 
 ```bash
 node dist/cli/index.js logs --review --effect deny,ask --limit 20
+node dist/cli/index.js logs --review --since 2026-06-02T12:00:00.000Z --until 2026-06-02T13:00:00.000Z
 node dist/cli/index.js logs --review --format jsonl --effect redact --limit 10
 ```
 

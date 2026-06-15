@@ -259,6 +259,41 @@ describe("agentgate policy/logs", () => {
     expect(result.stdout).not.toContain("Allowed read");
   });
 
+  it("filters audit review markdown by timestamp window", async () => {
+    const root = tempRoot();
+    fs.writeFileSync(path.join(root, "agentgate.yml"), renderPolicyYaml(balancedPolicy()), "utf8");
+    fs.mkdirSync(path.join(root, ".agentgate"), { recursive: true });
+    const records = [
+      auditRecord(root, "deny-before", "deny", "Before window", "2026-06-02T12:00:00.000Z"),
+      auditRecord(root, "ask-inside", "ask", "Inside ask", "2026-06-02T12:05:00.000Z"),
+      auditRecord(root, "deny-inside", "deny", "Inside deny", "2026-06-02T12:10:00.000Z"),
+      auditRecord(root, "redact-after", "redact", "After window", "2026-06-02T12:20:00.000Z"),
+      auditRecord(root, "allow-inside", "allow", "Allowed inside", "2026-06-02T12:06:00.000Z")
+    ];
+    fs.writeFileSync(path.join(root, ".agentgate/audit.jsonl"), `${records.map((record) => JSON.stringify(record)).join("\n")}\n`, "utf8");
+
+    const result = await execa("node", [
+      path.resolve("dist/cli/index.js"),
+      "logs",
+      "--review",
+      "--since",
+      "2026-06-02T12:05:00.000Z",
+      "--until",
+      "2026-06-02T12:10:00.000Z"
+    ], { cwd: root });
+
+    expect(result.stdout).toContain("# AgentGate Audit Review");
+    expect(result.stdout).toContain("- Review events: 2");
+    expect(result.stdout).toContain("- Denied: 1");
+    expect(result.stdout).toContain("- Asked: 1");
+    expect(result.stdout).toContain("- Redacted: 0");
+    expect(result.stdout).toContain("Inside ask");
+    expect(result.stdout).toContain("Inside deny");
+    expect(result.stdout).not.toContain("Before window");
+    expect(result.stdout).not.toContain("After window");
+    expect(result.stdout).not.toContain("Allowed inside");
+  });
+
   it("keeps filtered audit review JSONL output as raw records", async () => {
     const root = tempRoot();
     fs.writeFileSync(path.join(root, "agentgate.yml"), renderPolicyYaml(balancedPolicy()), "utf8");
@@ -287,5 +322,35 @@ describe("agentgate policy/logs", () => {
     expect(lines).toHaveLength(1);
     expect(parsed[0]?.id).toBe("ask-new");
     expect(parsed[0]?.decision.effect).toBe("ask");
+  });
+
+  it("keeps timestamp-window JSONL output as raw records", async () => {
+    const root = tempRoot();
+    fs.writeFileSync(path.join(root, "agentgate.yml"), renderPolicyYaml(balancedPolicy()), "utf8");
+    fs.mkdirSync(path.join(root, ".agentgate"), { recursive: true });
+    const records = [
+      auditRecord(root, "ask-old", "ask", "Old ask", "2026-06-02T12:00:00.000Z"),
+      auditRecord(root, "deny-inside", "deny", "Denied inside", "2026-06-02T12:01:00.000Z"),
+      auditRecord(root, "ask-new", "ask", "New ask", "2026-06-02T12:02:00.000Z")
+    ];
+    fs.writeFileSync(path.join(root, ".agentgate/audit.jsonl"), `${records.map((record) => JSON.stringify(record)).join("\n")}\n`, "utf8");
+
+    const result = await execa("node", [
+      path.resolve("dist/cli/index.js"),
+      "logs",
+      "--review",
+      "--format",
+      "jsonl",
+      "--since",
+      "2026-06-02T12:01:00.000Z",
+      "--until",
+      "2026-06-02T12:01:00.000Z"
+    ], { cwd: root });
+    const lines = result.stdout.split("\n").filter(Boolean);
+    const parsed = lines.map((line) => JSON.parse(line) as AuditRecord);
+
+    expect(lines).toHaveLength(1);
+    expect(parsed[0]?.id).toBe("deny-inside");
+    expect(parsed[0]?.decision.effect).toBe("deny");
   });
 });
