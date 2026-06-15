@@ -33,6 +33,19 @@ node dist/cli/index.js exec -- pnpm check
 
 High-risk shell commands ask before execution. Critical commands are denied.
 
+## CI Gate
+
+Use `examples/github-actions/agentgate-gate.yml` as a copy-ready GitHub Actions starting point for downstream repos that want AgentGate as a pull request or release gate. The workflow runs strict readiness checks, executable policy fixtures, package-content smoke, and install smoke:
+
+```bash
+pnpm exec agentgate check --strict
+pnpm exec agentgate policy test --cases examples/policy-tests/basic.agentgate-tests.yml
+pnpm smoke:package
+pnpm smoke:install
+```
+
+Copy the example into `.github/workflows/agentgate.yml`, then adjust the policy fixture path if the downstream repo stores its cases somewhere else.
+
 ## MCP Gateway
 
 For MCP clients, configure an upstream server in `agentgate.yml`, then point the client at the AgentGate proxy:

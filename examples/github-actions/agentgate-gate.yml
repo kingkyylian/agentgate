@@ -1,0 +1,24 @@
+name: agentgate
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+env:
+  AGENTGATE_AUDIT_PATH: .agentgate/audit.jsonl
+
+jobs:
+  agentgate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec agentgate check --strict
+      - run: pnpm exec agentgate policy test --cases examples/policy-tests/basic.agentgate-tests.yml
+      - run: pnpm smoke:package
+      - run: pnpm smoke:install
