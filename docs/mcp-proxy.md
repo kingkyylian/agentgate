@@ -16,10 +16,21 @@ mcp:
 Run:
 
 ```bash
+agentgate mcp setup --server filesystem --launch global
 agentgate mcp-proxy --server filesystem
 ```
 
 If `--server` is omitted, AgentGate uses the first configured upstream. If a name is provided and it is not configured, the CLI exits with a `FAIL mcp-proxy` message that includes the available upstream names.
+
+Use `agentgate mcp setup` to print a copy-ready MCP client config for the selected upstream:
+
+```bash
+agentgate mcp setup --server filesystem --launch global
+agentgate mcp setup --server filesystem --launch local
+agentgate mcp setup --server filesystem --launch npx
+```
+
+The `global` launch shape runs `agentgate` from the MCP client's `PATH`. The `local` launch shape runs `node dist/cli/index.js` from a fresh checkout after `pnpm build`. The `npx` launch shape runs `@kingkyylian/agentgate@latest` through the npm registry. The command validates `mcp.upstreams` and fails with available server names when `--server` is unknown.
 
 The proxy forwards normal JSON-RPC traffic. For `tools/call`, it creates a normalized `ToolEvent`, evaluates policy, writes an audit record, and either forwards the request or returns a structured JSON-RPC error.
 

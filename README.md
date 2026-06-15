@@ -73,6 +73,7 @@ Use `agentgate check --format json` when automation needs stable readiness metad
 Start an MCP stdio proxy:
 
 ```bash
+agentgate mcp setup --server filesystem --launch global
 agentgate mcp-proxy --config agentgate.yml --server filesystem
 ```
 

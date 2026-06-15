@@ -51,6 +51,7 @@ mcp:
 Run the proxy:
 
 ```bash
+agentgate mcp setup --server filesystem --launch global
 agentgate mcp-proxy --config agentgate.yml --server filesystem
 ```
 
@@ -59,6 +60,10 @@ MCP `ask` decisions are non-interactive: AgentGate records the event, does not f
 ### Global AgentGate CLI
 
 Use this shape when `agentgate` is available on the MCP client's `PATH`:
+
+```bash
+agentgate mcp setup --server filesystem --launch global
+```
 
 ```json
 {
@@ -77,6 +82,10 @@ The packaged `examples/mcp/sample-client-config.json` uses this global CLI shape
 
 Use this shape from a fresh checkout after `pnpm build`, before the package is installed globally:
 
+```bash
+agentgate mcp setup --server filesystem --launch local
+```
+
 ```json
 {
   "mcpServers": {
@@ -92,6 +101,10 @@ Use this shape from a fresh checkout after `pnpm build`, before the package is i
 
 Use this shape when the MCP client can run package binaries but the project has not installed AgentGate locally:
 
+```bash
+agentgate mcp setup --server filesystem --launch npx
+```
+
 ```json
 {
   "mcpServers": {
@@ -103,7 +116,7 @@ Use this shape when the MCP client can run package binaries but the project has 
 }
 ```
 
-All three recipes read `agentgate.yml` from the MCP client's working directory unless `--config` points somewhere else. Audit records are written to the policy's `audit.path`; the default is `.agentgate/audit.jsonl`, resolved relative to the same working directory used by the client.
+All three setup commands print JSON to stdout and read `agentgate.yml` from the MCP client's working directory unless `--config` points somewhere else. Audit records are written to the policy's `audit.path`; the default is `.agentgate/audit.jsonl`, resolved relative to the same working directory used by the client.
 
 For non-interactive `ask` decisions, MCP clients should surface the JSON-RPC error instead of retrying automatically. The error data includes `approval.reviewCommand: "agentgate logs --review"` and `auditPath`, so clients can point the user at the relevant audit review command.
 

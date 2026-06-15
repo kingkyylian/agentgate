@@ -16,6 +16,7 @@ export type { AuditRecord } from "./audit/audit-record.js";
 export { appendAuditRecord, readAuditRecords } from "./audit/jsonl-sink.js";
 export { renderAuditMarkdown, renderAuditReviewMarkdown } from "./audit/markdown-report.js";
 export { McpProxy, type McpProxyOptions } from "./mcp/proxy.js";
+export { buildMcpClientConfig, parseMcpLaunchMode, resolveMcpServerName, type McpClientConfig, type McpLaunchMode } from "./mcp/setup.js";
 export { toolCallToEvent, type JsonRpcRequest } from "./mcp/tool-map.js";
 export { evaluateAgentGateReadiness, type AgentGateReadiness } from "./integrations/agentfit.js";
 export { summarizeForHandoffKit, type HandoffAgentGateSummary } from "./integrations/handoffkit.js";

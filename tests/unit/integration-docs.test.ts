@@ -9,6 +9,7 @@ describe("integration docs", () => {
     expect(doc).toContain("node dist/cli/index.js check --strict");
     expect(doc).toContain("node dist/cli/index.js exec -- npm test");
     expect(doc).toContain("node dist/cli/index.js logs --review");
+    expect(doc).toContain("agentgate mcp setup --server filesystem --launch global");
     expect(doc).toContain("agentgate mcp-proxy --config agentgate.yml --server filesystem");
     expect(doc).toContain("examples/policies/read-only-review.agentgate.yml");
     expect(doc).toContain("examples/policies/docs-maintainer.agentgate.yml");
@@ -19,10 +20,13 @@ describe("integration docs", () => {
     const doc = fs.readFileSync(path.resolve("docs/integrations/coding-agents.md"), "utf8");
 
     expect(doc).toContain("### Global AgentGate CLI");
+    expect(doc).toContain("agentgate mcp setup --server filesystem --launch global");
     expect(doc).toContain('"command": "agentgate"');
     expect(doc).toContain("### Repo-local Node command");
+    expect(doc).toContain("agentgate mcp setup --server filesystem --launch local");
     expect(doc).toContain('"command": "node"');
     expect(doc).toContain("### Registry-backed npx command");
+    expect(doc).toContain("agentgate mcp setup --server filesystem --launch npx");
     expect(doc).toContain('"command": "npx"');
     expect(doc).toContain("audit.path");
     expect(doc).toContain('approval.reviewCommand: "agentgate logs --review"');

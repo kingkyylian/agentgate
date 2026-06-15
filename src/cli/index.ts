@@ -5,6 +5,7 @@ import { registerDemoCommand } from "./commands/demo.js";
 import { registerExecCommand } from "./commands/exec.js";
 import { registerInitCommand } from "./commands/init.js";
 import { registerLogsCommand } from "./commands/logs.js";
+import { registerMcpCommand } from "./commands/mcp.js";
 import { registerMcpProxyCommand } from "./commands/mcp-proxy.js";
 import { registerPolicyCommand } from "./commands/policy.js";
 
@@ -20,6 +21,7 @@ registerCheckCommand(program);
 registerDemoCommand(program);
 registerExecCommand(program);
 registerLogsCommand(program);
+registerMcpCommand(program);
 registerMcpProxyCommand(program);
 registerPolicyCommand(program);
 
